@@ -9,12 +9,12 @@ type redisBalancer struct {
 	client redis.UniversalClient
 }
 
-// NewRedisBalancer .
+// NewRedisBalancer balancer using redis
 func NewRedisBalancer(client redis.UniversalClient) Balancer {
 	return &redisBalancer{client: client}
 }
 
-// Add .
+// Add balance using IncrByFloat and Time in Transaction Pipeline
 func (p *redisBalancer) Add(ctx context.Context, req *Request) (*Result, error) {
 	tx := p.client.TxPipeline()
 	valueUpdater := tx.IncrByFloat(ctx, req.ID, req.Value)
@@ -30,7 +30,7 @@ func (p *redisBalancer) Add(ctx context.Context, req *Request) (*Result, error) 
 	}, nil
 }
 
-// Deduct .
+// Deduct balance with negative value to decrement value
 func (p *redisBalancer) Deduct(ctx context.Context, req *Request) (*Result, error) {
 	req.Value = 0 - req.Value
 
